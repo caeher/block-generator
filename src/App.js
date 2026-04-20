@@ -1,65 +1,67 @@
 import React, { useState } from 'react';
 
 function App() {
-  // Estados para guardar lo que escribe el usuario y los mensajes de estado
   const [address, setAddress] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
 
-  // Función que se ejecuta al hacer clic en cualquier botón
   const generateBlocks = async (numberOfBlocks) => {
-    // 1. Validación básica
     if (!address) {
       alert("Por favor, ingresa una dirección de billetera primero.");
       return;
     }
 
-    // 2. Mostrar mensaje de "Cargando..."
-    setStatusMessage(`Solicitando generar ${numberOfBlocks} bloque(s) para ${address}...`);
+    setStatusMessage(`Solicitando generar ${numberOfBlocks} bloque(s)...`);
+
+    // Credenciales RPC (deben coincidir con tu bitcoin.conf)
+    const rpcuser = 'local_rpc';
+    const rpcpassword = 'local_rpc_password';
+
+    const body = {
+      jsonrpc: '1.0',
+      id: 'frontend',
+      method: 'generatetoaddress',
+      params: [numberOfBlocks, address]
+    };
 
     try {
-      // 3. Llamada al backend (tu servidor "puente")
-      // Asumimos que tu backend escucha en el puerto 3001 y tiene la ruta /generate
-      const response = await fetch('http://localhost:3001/generate', {
+      // ← La URL es "/" porque el proxy de CRA redirige al nodo
+      const response = await fetch('/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + btoa(`${rpcuser}:${rpcpassword}`),
         },
-        body: JSON.stringify({ 
-          walletAddress: address, // La dirección del input
-          blocksToGenerate: numberOfBlocks // 1, 10 o 100
-        }),
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
 
-      // 4. Manejar la respuesta del servidor
-      if (response.ok && data.success) {
-        setStatusMessage(`¡Éxito! Se han generado ${numberOfBlocks} bloques. ID de transacción: ${data.txid}`);
+      // La respuesta RPC tiene la forma { result: [...], error: null, id: "..." }
+      if (data.error) {
+        setStatusMessage(`Error RPC: ${data.error.message}`);
       } else {
-        setStatusMessage(`Error del servidor: ${data.error || 'Intentalo de nuevo'}`);
+        const hashes = data.result;
+        setStatusMessage(`¡Éxito! ${hashes.length} bloque(s) generados.\nÚltimo hash: ${hashes[hashes.length - 1]}`);
       }
 
     } catch (error) {
-      // Manejar errores de conexión (ej: si el backend no está corriendo)
       console.error("Error en la petición:", error);
-      setStatusMessage("Error de conexión: No se pudo contactar con el servidor backend.");
+      setStatusMessage("Error de conexión: ¿Está corriendo Bitcoin Core en regtest?");
     }
   };
 
-  // El "HTML" (JSX) que ve el usuario
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Generador de Bloques (Bitcoin Regtest)</h1>
       <hr />
-      
-      {/* Sección del Input */}
+
       <div style={{ marginBottom: '15px' }}>
         <label htmlFor="addressInput" style={{ display: 'block', marginBottom: '5px' }}>
           Dirección de Billetera Bitcoin (Regtest):
         </label>
-        <input 
+        <input
           id="addressInput"
-          type="text" 
+          type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           placeholder="Ej: bcrt1q..."
@@ -67,33 +69,24 @@ function App() {
         />
       </div>
 
-      {/* Sección de Botones */}
       <div style={{ display: 'flex', gap: '10px' }}>
-        <button onClick={() => generateBlocks(1)} style={buttonStyle}>
-          Generar 1 Bloque
-        </button>
-        <button onClick={() => generateBlocks(10)} style={buttonStyle}>
-          Generar 10 Bloques
-        </button>
-        <button onClick={() => generateBlocks(100)} style={buttonStyle}>
-          Generar 100 Bloques
-        </button>
+        <button onClick={() => generateBlocks(1)} style={buttonStyle}>Generar 1 Bloque</button>
+        <button onClick={() => generateBlocks(10)} style={buttonStyle}>Generar 10 Bloques</button>
+        <button onClick={() => generateBlocks(100)} style={buttonStyle}>Generar 100 Bloques</button>
       </div>
 
       <hr />
 
-      {/* Sección de Estado */}
       {statusMessage && (
         <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f0f0f0', border: '1px solid #ccc' }}>
           <strong>Estado:</strong>
-          <p style={{ margin: '5px 0 0 0' }}>{statusMessage}</p>
+          <p style={{ margin: '5px 0 0 0', whiteSpace: 'pre-wrap' }}>{statusMessage}</p>
         </div>
       )}
     </div>
   );
 }
 
-// Un estilo muy básico para los botones
 const buttonStyle = {
   padding: '10px 15px',
   fontSize: '16px',
