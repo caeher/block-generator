@@ -1,0 +1,16 @@
+.git
+.env
+node_modules
+package.json
+package-lock.json
+README.md
+Dockerfile
+.dockerignore
+.gitignore
+src/*.js
+src/*.css
+src/*.svg
+public/*.json
+public/*.png
+public/*.html
+public/*.txt
