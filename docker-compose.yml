@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    container_name: block-generator-local
+    ports:
+      - "8090:80"
+    env_file:
+      - .env.example # O puedes crear un .env local
+    environment:
+      - BITCOIN_RPC_URL=${BITCOIN_RPC_URL:-http://host.docker.internal:18443}
+      - BITCOIN_RPC_USER=${BITCOIN_RPC_USER:-local_rpc}
+      - BITCOIN_RPC_PASSWORD=${BITCOIN_RPC_PASSWORD:-local_rpc_password}
+    restart: unless-stopped

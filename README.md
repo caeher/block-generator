@@ -18,24 +18,22 @@ La aplicación requiere acceso a un nodo Bitcoin corriendo en modo `regtest`. De
 | `BITCOIN_RPC_USER` | Usuario RPC (bitcoin.conf) | `local_rpc` |
 | `BITCOIN_RPC_PASSWORD` | Contraseña RPC (bitcoin.conf) | `local_rpc_password` |
 
-## Ejecución con Docker (Recomendado)
+## Ejecución con Docker Compose
 
-1. Construir la imagen:
-   ```bash
-   docker build -t block-generator .
-   ```
+### Entorno Local (Puerto 8090)
+Ideal para desarrollo. Utiliza el puerto **8090**.
+```bash
+docker-compose up -d
+```
+Accede en: `http://localhost:8090`
 
-2. Ejecutar el contenedor:
-   ```bash
-   docker run -d -p 8080:80 \
-     -e BITCOIN_RPC_URL=http://host.docker.internal:18443 \
-     -e BITCOIN_RPC_USER=tu_usuario \
-     -e BITCOIN_RPC_PASSWORD=tu_password \
-     block-generator
-   ```
-   *Nota: Usa `host.docker.internal` para referirte a servicios corriendo en tu host desde el contenedor.*
+### Entorno de Producción (Sin puertos expuestos)
+Ideal para despliegues detrás de un proxy inverso (como Nginx o Traefik).
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
 
-3. Abrir `http://localhost:8080` en tu navegador.
+## Ejecución con Docker (Manual)
 
 ## Ejecución Local (Sin Docker)
 

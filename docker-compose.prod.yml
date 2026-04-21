@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    container_name: block-generator-prod
+    # No ports indicated as per requirement
+    environment:
+      - BITCOIN_RPC_URL=${BITCOIN_RPC_URL}
+      - BITCOIN_RPC_USER=${BITCOIN_RPC_USER}
+      - BITCOIN_RPC_PASSWORD=${BITCOIN_RPC_PASSWORD}
+    restart: always
